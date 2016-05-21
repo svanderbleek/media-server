@@ -19,3 +19,8 @@ executable media-server
   build-depends:       base >= 4.7 && < 5
                      , scotty
                      , aeson
+                     , mtl
+                     , http-types
+                     , uuid
+                     , random
+                     , aws

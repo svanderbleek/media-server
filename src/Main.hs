@@ -4,11 +4,15 @@
 module Main where
 
 import GHC.Generics
-import Web.Scotty (scotty, ScottyM, ActionM, get, post, json, text)
+import Control.Monad.Trans (liftIO)
+import Network.HTTP.Types (status200)
+import Web.Scotty (ScottyM, ActionM, scotty, get, post, json, param, status)
 import Data.Aeson (ToJSON, toJSON, fromJSON, object, (.=))
+import qualified Store
 
-type Token = String
+type UserToken = String
 type Percentage = Int
+type Domain = String
 
 data Method = Get | Post deriving (Generic, Show)
 
@@ -19,7 +23,7 @@ data Status =
   | InProgress Percentage
   | Complete
   | Error
-  deriving (Show)
+  deriving (Show, Read)
 
 instance ToJSON Status where
   toJSON (InProgress percentage) =
@@ -31,19 +35,21 @@ instance ToJSON Status where
     [ "value" .= show status ]
 
 data Upload = 
-  Upload Token Status
-  deriving (Generic, Show)
+  Upload Store.Id UserToken Status
+  deriving (Show, Read)
 
 instance ToJSON Upload where
-  toJSON (Upload token status) =
-    object 
-    [ "status" .= status
-    , "upload" .= object
-      [ "method" .= Post
-      , "url" .= mkUploadUrl token ]
-    , "progress" .= object
-      [ "method" .= Get
-      , "url" .= mkUploadUrl token ] ]
+  toJSON (Upload id token status) = object 
+    [ "id" .= show id
+    , "token" .= token
+    , "status" .= status
+    , "actions" .= object
+      [ "start" .= object
+        [ "method" .= Post
+        , "url" .= mkS3UploadUrl id domain ]
+      , "check" .= object
+        [ "method" .= Get
+        , "url" .= mkUploadUrl id domain ] ] ]
 
 main :: IO ()
 main =
@@ -52,8 +58,31 @@ main =
 routes :: ScottyM () 
 routes = 
   do
-    post "/uploads" (json $ Upload "token" Ready)
-    get "/uploads" (json $ Upload "token" Ready)
+    get "/" $ status status200
+    post "/uploads/:token" createUpload
+    get "/uploads/:id" findUpload
 
-mkUploadUrl :: Token -> String
-mkUploadUrl token = "uploads/" ++ token
+createUpload :: ActionM ()
+createUpload = 
+  do
+    token <- param "token"
+    id <- liftIO Store.genId
+    let upload = Upload id token Ready
+    liftIO $ Store.put id upload
+    json upload
+
+findUpload :: ActionM ()
+findUpload = 
+  do
+    id <- read <$> param "id"
+    upload <- liftIO (Store.get id :: IO Upload)
+    json upload
+
+mkS3UploadUrl :: Store.Id -> Domain -> String
+mkS3UploadUrl id domain = "s3://" ++ domain ++ "/media-server/uploads/" ++ show id
+
+mkUploadUrl :: Store.Id -> Domain -> String
+mkUploadUrl id domain = "http://media-server." ++ domain ++ ".com/uploads/" ++ show id
+
+domain :: Domain
+domain = "pornlevy"
