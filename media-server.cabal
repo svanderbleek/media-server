@@ -28,3 +28,5 @@ executable media-server
                      , aws
                      , s3-signer
                      , network-uri
+                     , text
+                     , transformers

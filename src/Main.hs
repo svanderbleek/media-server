@@ -1,16 +1,17 @@
- {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
 import Control.Monad.Trans (liftIO)
 import Network.HTTP.Types (status200)
-import Web.Scotty (ScottyM, ActionM, scotty, get, post, json, param, status)
+import Web.Scotty.Trans (scottyT, ScottyT, ActionT, get, post, json, param, status) 
 import qualified Store
 import Network.URI (URI, parseURI)
-import Config (ConfigR)
+import Config (ConfigR, runConfigR)
 import qualified Config
 import Control.Monad.Reader (asks, runReaderT)
 import Upload (Upload(..), Status(..))
+import Data.Text.Lazy (Text)
 
 {- 
 , "actions" .= object
@@ -22,20 +23,24 @@ import Upload (Upload(..), Status(..))
     , "url" .= mkCheckUrl id ] ] ] 
 -}
 
+type Error = Text
+type Action = ActionT Error ConfigR ()
+
 main :: IO ()
 main =
   do
     config <- Config.get
-    scotty 3333 routes
+    let reader monad = runReaderT (runConfigR monad) config
+    scottyT 3333 reader routes
   
-routes :: ScottyM () 
+routes :: ScottyT Error ConfigR ()
 routes = 
   do
     get "/" $ status status200
     post "/uploads/:token" createUpload
     get "/uploads/:id" findUpload
 
-createUpload :: ActionM ()
+createUpload :: Action
 createUpload = 
   do
     token <- param "token"
@@ -44,7 +49,7 @@ createUpload =
     liftIO $ Store.put id upload
     json upload
 
-findUpload :: ActionM ()
+findUpload :: Action
 findUpload = 
   do
     id <- read <$> param "id"

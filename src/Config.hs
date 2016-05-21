@@ -1,8 +1,10 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Config (ConfigR, Config(..), get) where
+module Config (ConfigR, runConfigR, Config(..), get) where
 
-import Control.Monad.Reader (ReaderT)
+import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.Reader (MonadReader, ReaderT)
 import System.Environment as Sys
 
 data Config =
@@ -12,7 +14,10 @@ data Config =
     awsKey :: String
   }
 
-type ConfigR a = ReaderT Config IO a
+newtype ConfigR a = 
+  ConfigR {
+    runConfigR :: ReaderT Config IO a
+  } deriving (Applicative, Functor, Monad, MonadIO, MonadReader Config)
 
 get :: IO Config
 get =
