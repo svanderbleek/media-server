@@ -10,18 +10,9 @@ import Network.URI (URI, parseURI)
 import Config (ConfigReader, runConfigReader)
 import qualified Config
 import Control.Monad.Reader (asks, runReaderT)
-import Upload (Upload(..), Status(..))
+import Upload (Upload(..), Status(..), Actions(..), Method(..))
 import Data.Text.Lazy (Text)
-
-{- 
-, "actions" .= object
-  [ "start" .= object
-    [ "method" .= Post
-    , "url" .= mkStartUrl id ]
-  , "check" .= object
-    [ "method" .= Get
-    , "url" .= mkCheckUrl id ] ] ] 
--}
+import Data.ByteString.Char8 (pack)
 
 type Error
   = Text
@@ -44,14 +35,17 @@ app =
   do
     get "/" $ status status200
     post "/uploads/:token" createUpload
-    -- get "/uploads/:id" findUpload
+    get "/uploads/:id" findUpload
 
 createUpload :: Action
 createUpload = 
   do
     token <- param "token"
     id <- liftIO Store.genId
-    let upload = Upload id token Ready
+    let domain = "pornlevy"
+    put <- liftIO $ Store.genPut domain id
+    let get = mkGet domain id
+    let upload = Upload id token Ready (Actions [("check", GET, get), ("start", POST, put)])
     liftIO $ Store.put "pornlevy" id upload
     json upload
 
@@ -61,15 +55,7 @@ findUpload =
     id <- read <$> param "id"
     upload <- liftIO (Store.get "pornlevy" id :: IO Upload)
     json upload
+    return ()
 
-mkStartUrl :: Store.Id -> ConfigReader String
-mkStartUrl id = 
-  do
-    domain <- asks Config.domain
-    return $ "s3://" ++ domain ++ "/media-server/uploads/" ++ show id
-
-mkCheckUrl :: Store.Id -> ConfigReader String
-mkCheckUrl id = 
-  do
-    domain <- asks Config.domain
-    return $ "http://" ++ domain ++ "/uploads/" ++ show id
+mkGet :: Config.Domain -> Store.Id -> Store.Url
+mkGet domain id = pack $ "http://" ++ domain ++ "/uploads/" ++ show id

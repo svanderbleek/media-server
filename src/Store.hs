@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Store (Id, Url, genId, put, get) where
+module Store (Id, Url, genId, genPut, put, get) where
 
 import Data.UUID (UUID)
 import qualified Data.UUID as UUID
@@ -26,8 +26,8 @@ type Url
 genId :: IO Id
 genId = randomIO
 
-genUrl :: Domain -> Id -> IO Url
-genUrl domain id =
+genPut :: Domain -> Id -> IO Url
+genPut domain id =
   do
     env <- liftIO awsEnv
     time <- getCurrentTime
