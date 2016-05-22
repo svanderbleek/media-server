@@ -3,7 +3,8 @@ resolver: lts-5.17
 packages:
 - '.'
 
-extra-deps: []
+extra-deps:
+- haxl-amazonka-0.1.0.0
 
 flags: {}
 

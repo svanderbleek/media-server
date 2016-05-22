@@ -25,7 +25,6 @@ executable media-server
                      , http-types
                      , uuid
                      , random
-                     , aws
                      , s3-signer
                      , network-uri
                      , text

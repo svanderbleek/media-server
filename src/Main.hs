@@ -7,7 +7,7 @@ import Network.HTTP.Types (status200)
 import Web.Scotty.Trans (scottyT, ScottyT, ActionT, get, post, json, param, status) 
 import qualified Store
 import Network.URI (URI, parseURI)
-import Config (ConfigR, runConfigR)
+import Config (ConfigReader, runConfigReader)
 import qualified Config
 import Control.Monad.Reader (asks, runReaderT)
 import Upload (Upload(..), Status(..))
@@ -24,17 +24,18 @@ import Data.Text.Lazy (Text)
 -}
 
 type Error = Text
-type Action = ActionT Error ConfigR ()
+type Action = ActionT Error ConfigReader ()
+type App = ScottyT Error ConfigReader ()
 
 main :: IO ()
 main =
   do
     config <- Config.get
-    let reader monad = runReaderT (runConfigR monad) config
-    scottyT 3333 reader routes
+    let reader monad = runReaderT (runConfigReader monad) config
+    scottyT 3333 reader app
   
-routes :: ScottyT Error ConfigR ()
-routes = 
+app :: App
+app = 
   do
     get "/" $ status status200
     post "/uploads/:token" createUpload
@@ -46,7 +47,6 @@ createUpload =
     token <- param "token"
     id <- liftIO Store.genId
     let upload = Upload id token Ready
-    liftIO $ Store.put id upload
     json upload
 
 findUpload :: Action
@@ -56,13 +56,13 @@ findUpload =
     upload <- liftIO (Store.get id :: IO Upload)
     json upload
 
-mkStartUrl :: Store.Id -> ConfigR String
+mkStartUrl :: Store.Id -> ConfigReader String
 mkStartUrl id = 
   do
     domain <- asks Config.domain
     return $ "s3://" ++ domain ++ "/media-server/uploads/" ++ show id
 
-mkCheckUrl :: Store.Id -> ConfigR String
+mkCheckUrl :: Store.Id -> ConfigReader String
 mkCheckUrl id = 
   do
     domain <- asks Config.domain
