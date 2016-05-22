@@ -5,24 +5,23 @@ A Haskell Image and Video media server
 ## API
 
 ```
-POST /uploads
-
-takes:
+POST media-server.:domain.com/uploads/:token
 
 {
-  token: "token"
-}
-
-returns:
-
-{
-  upload: {
-    method: "POST"
-    url: "/uploads/:id" 
+  "actions": {
+    "check": {
+      "method": "GET",
+        "url": "http://media-server.:domain.com/uploads/:id"
+    },
+    "start": {
+      "method": "POST",
+      "url": "s3://:domain/uploads/:id"
+    }
   },
-  status: {
-    method: "GET"
-    url: "/uploads/:id"
-  }
+  "id": ":id",
+  "status": {
+    "value": "Ready"
+  },
+  "token": ":token"
 }
 ```
