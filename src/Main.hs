@@ -23,9 +23,14 @@ import Data.Text.Lazy (Text)
     , "url" .= mkCheckUrl id ] ] ] 
 -}
 
-type Error = Text
-type Action = ActionT Error ConfigReader ()
-type App = ScottyT Error ConfigReader ()
+type Error
+  = Text
+
+type Action
+  = ActionT Error ConfigReader ()
+
+type App
+  = ScottyT Error ConfigReader ()
 
 main :: IO ()
 main =

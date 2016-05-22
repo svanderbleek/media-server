@@ -12,8 +12,11 @@ import Control.Monad.Reader (asks)
 import Control.Monad.Trans (liftIO)
 import Data.Text (pack)
 
-type Id = UUID
-type Url = S3URL
+type Id
+  = UUID
+
+type Url
+  = S3URL
 
 genId :: IO Id
 genId = randomIO

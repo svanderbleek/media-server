@@ -11,12 +11,15 @@ import qualified Store
 type UserToken = String
 type Percentage = Int
 
-data Method = Get | Post deriving (Generic, Show)
+data Method 
+  = Get
+  | Post 
+  deriving (Generic, Show)
 
 instance ToJSON Method
 
-data Status =
-  Ready
+data Status 
+  = Ready
   | InProgress Percentage
   | Complete
   | Error
@@ -31,12 +34,13 @@ instance ToJSON Status where
     object
     [ "value" .= show status ]
 
-data Upload = 
-  Upload Store.Id UserToken Status
+data Upload 
+  = Upload Store.Id UserToken Status
   deriving (Show, Read)
 
 instance ToJSON Upload where
-  toJSON (Upload id token status) = object 
+  toJSON (Upload id token status) =
+    object 
     [ "id" .= show id
-    , "token" .= token
-    , "status" .= status ]
+      , "token" .= token
+      , "status" .= status ]

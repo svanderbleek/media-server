@@ -7,17 +7,16 @@ import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (MonadReader, ReaderT)
 import System.Environment as Sys
 
-data Config =
-  Config {
-    domain :: String,
+data Config
+  = Config  
+  { domain :: String,
     awsId :: String,
-    awsKey :: String
-  }
+    awsKey :: String }
 
-newtype ConfigReader a = 
-  ConfigReader {
-    runConfigReader :: ReaderT Config IO a
-  } deriving (Applicative, Functor, Monad, MonadIO, MonadReader Config)
+newtype ConfigReader a
+  = ConfigReader  
+  { runConfigReader :: ReaderT Config IO a }
+  deriving (Applicative, Functor, Monad, MonadIO, MonadReader Config)
 
 get :: IO Config
 get =
