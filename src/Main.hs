@@ -44,7 +44,7 @@ app =
   do
     get "/" $ status status200
     post "/uploads/:token" createUpload
-    get "/uploads/:id" findUpload
+    -- get "/uploads/:id" findUpload
 
 createUpload :: Action
 createUpload = 
@@ -52,13 +52,14 @@ createUpload =
     token <- param "token"
     id <- liftIO Store.genId
     let upload = Upload id token Ready
+    liftIO $ Store.put "pornlevy" id upload
     json upload
 
 findUpload :: Action
 findUpload = 
   do
     id <- read <$> param "id"
-    upload <- liftIO (Store.get id :: IO Upload)
+    upload <- liftIO (Store.get "pornlevy" id :: IO Upload)
     json upload
 
 mkStartUrl :: Store.Id -> ConfigReader String

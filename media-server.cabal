@@ -25,7 +25,12 @@ executable media-server
                      , http-types
                      , uuid
                      , random
-                     , s3-signer
                      , network-uri
                      , text
                      , transformers
+                     , amazonka-s3
+                     , amazonka
+                     , time
+                     , bytestring
+                     , lens
+                     , conduit-extra
