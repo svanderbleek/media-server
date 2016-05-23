@@ -15,17 +15,17 @@ import Data.Text.Lazy
 import Data.ByteString.Char8
   (pack)
 
+import Control.Monad.Trans
+  (liftIO)
+import Control.Monad.Reader
+  (asks, runReaderT)
+
 import qualified Config
 import Config
   (ConfigReader, runConfigReader)
 import qualified Store
 import Upload
   (Upload(..), Status(..), Actions(..), Method(..))
-
-import Control.Monad.Trans
-  (liftIO)
-import Control.Monad.Reader
-  (asks, runReaderT)
 
 type Error
   = Text
@@ -59,7 +59,7 @@ createUpload =
     let domain = "pornlevy"
     put <- liftIO $ Store.genPut domain id
     let get = mkGet domain id
-    let upload = Upload id token Ready (Actions [("check", GET, get), ("start", POST, put)])
+    let upload = Upload id token Ready (mkActions get put)
     liftIO $ Store.put domain id upload
     json upload
 
@@ -70,7 +70,11 @@ findUpload =
     let domain = "pornlevy"
     upload <- liftIO (Store.get domain id :: IO Upload)
     json upload
-    return ()
+
+mkActions :: Store.Url -> Store.Url -> Actions
+mkActions get put =
+  Actions [("check", GET, get), ("start", POST, put)]
 
 mkGet :: Config.Domain -> Store.Id -> Store.Url
-mkGet domain id = pack $ "http://" ++ domain ++ "/uploads/" ++ show id
+mkGet domain id =
+  pack $ "http://" ++ domain ++ "/uploads/" ++ show id
