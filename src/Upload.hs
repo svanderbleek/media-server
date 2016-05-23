@@ -4,12 +4,15 @@
 
 module Upload (Upload(..), Status(..), Method(..), Actions(..), UserToken) where
 
+import Data.Aeson
+  (ToJSON, toJSON, fromJSON, object, (.=))
+import Data.Aeson.Types
+  (Pair)
 import GHC.Generics
-import Data.Aeson (ToJSON, toJSON, fromJSON, object, (.=))
-import Data.Aeson.Types (Pair)
+import Data.Text (pack)
+
 import qualified Store
 import qualified Config
-import Data.Text (pack)
 
 type UserToken
   = String

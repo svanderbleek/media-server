@@ -2,20 +2,34 @@
 
 module Store (Id, Url, genId, genPut, put, get) where
 
-import Data.UUID (UUID)
-import qualified Data.UUID as UUID
-import System.Random (randomIO)
-import Config (Domain)
-import Control.Monad.Reader (asks)
-import Control.Monad.Trans (liftIO)
-import Data.Text (pack)
-import Data.Time (getCurrentTime)
-import Data.ByteString (ByteString)
-import Control.Monad.Trans.AWS (sinkBody, runResourceT, runAWST, send, presignURL, newEnv, Env, Seconds, toBody, RqBody, Region(..), Credentials(..))
-import Network.AWS.S3 (getObject, putObject, gorsBody, PutObjectResponse, BucketName(..), ObjectKey(..))
-import Control.Lens (view)
-import Data.Conduit.Binary (sinkLbs)
-import Data.ByteString.Lazy.Char8 (unpack)
+import Control.Monad.Trans.AWS
+  (sinkBody, runResourceT, runAWST, send, presignURL, newEnv
+  ,Env, Seconds, toBody, RqBody, Region(..), Credentials(..))
+import Network.AWS.S3
+  (getObject, putObject, gorsBody, PutObjectResponse
+  ,BucketName(..), ObjectKey(..))
+import Control.Monad.Trans
+  (liftIO)
+import Control.Lens
+  (view)
+import Data.Conduit.Binary
+  (sinkLbs)
+import Data.Time
+  (getCurrentTime)
+import Data.ByteString 
+  (ByteString)
+import Data.ByteString.Lazy.Char8
+  (unpack)
+import Data.Text 
+  (pack)
+
+import Data.UUID
+  (UUID)
+import System.Random
+  (randomIO)
+
+import Config
+  (Domain)
 
 type Id
   = UUID

@@ -2,17 +2,30 @@
 
 module Main where
 
-import Control.Monad.Trans (liftIO)
-import Network.HTTP.Types (status200)
-import Web.Scotty.Trans (scottyT, ScottyT, ActionT, get, post, json, param, status) 
-import qualified Store
-import Network.URI (URI, parseURI)
-import Config (ConfigReader, runConfigReader)
+import Web.Scotty.Trans
+  (scottyT, ScottyT, ActionT, get, post, json, param, status, middleware) 
+import Network.Wai.Middleware.Cors
+  (simpleCors)
+import Network.HTTP.Types
+  (status200)
+import Network.URI
+  (URI, parseURI)
+import Data.Text.Lazy
+  (Text)
+import Data.ByteString.Char8
+  (pack)
+
 import qualified Config
-import Control.Monad.Reader (asks, runReaderT)
-import Upload (Upload(..), Status(..), Actions(..), Method(..))
-import Data.Text.Lazy (Text)
-import Data.ByteString.Char8 (pack)
+import Config
+  (ConfigReader, runConfigReader)
+import qualified Store
+import Upload
+  (Upload(..), Status(..), Actions(..), Method(..))
+
+import Control.Monad.Trans
+  (liftIO)
+import Control.Monad.Reader
+  (asks, runReaderT)
 
 type Error
   = Text
@@ -33,6 +46,7 @@ main =
 app :: App
 app = 
   do
+    middleware simpleCors
     get "/" $ status status200
     post "/uploads/:token" createUpload
     get "/uploads/:id" findUpload

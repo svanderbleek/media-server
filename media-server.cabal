@@ -20,17 +20,18 @@ executable media-server
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
                      , scotty
+                     , wai-cors
                      , aeson
-                     , mtl
                      , http-types
+                     , text
+                     , time
+                     , bytestring
                      , uuid
                      , random
                      , network-uri
-                     , text
-                     , transformers
-                     , amazonka-s3
                      , amazonka
-                     , time
-                     , bytestring
-                     , lens
+                     , amazonka-s3
                      , conduit-extra
+                     , lens
+                     , mtl
+                     , transformers

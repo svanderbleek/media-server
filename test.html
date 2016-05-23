@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <script>
+      function bindForm(fetcher) {
+        debugger
+      };
+
+      function fetchStart(data) {
+        const start = startAction(data);
+        const fetcher = fetchAction(start);
+        bindForm(fetcher);
+      };
+
+      function fetchAction(action) {
+        return function(body) {
+          return fetch(start.url, {
+            method: start.method,
+            body: body 
+          });
+        };
+      };
+
+      const startAction = data => data.actions.start
+      const json = resp => resp.json()
+
+      fetch('http://localhost:3333/uploads/test', {
+        method: 'post',
+      })
+      .then(json)
+      .then(fetchStart)
+    </script>
+  </head>
+  <body>
+    <form id="file-form">
+      <input id="file-input" type="file">
+    </form>
+  </body>
+</html>
