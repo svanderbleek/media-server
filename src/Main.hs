@@ -46,14 +46,15 @@ createUpload =
     put <- liftIO $ Store.genPut domain id
     let get = mkGet domain id
     let upload = Upload id token Ready (Actions [("check", GET, get), ("start", POST, put)])
-    liftIO $ Store.put "pornlevy" id upload
+    liftIO $ Store.put domain id upload
     json upload
 
 findUpload :: Action
 findUpload = 
   do
     id <- read <$> param "id"
-    upload <- liftIO (Store.get "pornlevy" id :: IO Upload)
+    let domain = "pornlevy"
+    upload <- liftIO (Store.get domain id :: IO Upload)
     json upload
     return ()
 

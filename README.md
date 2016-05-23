@@ -25,3 +25,15 @@ POST media-server.:domain.com/uploads/:token
   "token": ":token"
 }
 ```
+
+## Deploy
+
+AWS t2 micro Ubuntu 14.04 deploy:
+
+```
+ssh ubuntu@ip
+sudo su root
+git clone https://github.com/svanderbleek/media-server.git
+cd media-server
+./deploy.sh
+```
