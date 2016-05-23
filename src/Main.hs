@@ -22,7 +22,7 @@ import Control.Monad.Reader
 
 import qualified Config
 import Config
-  (ConfigReader, runConfigReader)
+  (ConfigReader, runConfigReader, port)
 import qualified Store
 import Upload
   (Upload(..), Status(..), Actions(..), Method(..))
@@ -41,7 +41,7 @@ main =
   do
     config <- Config.get
     let reader monad = runReaderT (runConfigReader monad) config
-    scottyT 3333 reader app
+    scottyT (port config) reader app
   
 app :: App
 app = 
