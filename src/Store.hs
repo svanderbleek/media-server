@@ -45,23 +45,24 @@ genPut domain id =
   do
     env <- liftIO awsEnv
     time <- getCurrentTime
-    runResourceT . runAWST env $
-      presignURL time expiry (putObject (uploadBucket domain) (key id) "")
+    let req = presignURL time expiry $ putObject (uploadBucket domain) (key id) ""
+    runResourceT . runAWST env $ req
 
 put :: Show a => Domain -> Id -> a -> IO PutObjectResponse
 put domain id object =
   do
     env <- awsEnv
-    runResourceT . runAWST env $
-      send $ putObject (metaBucket domain) (key id) (body object)
+    let req = send $ putObject (metaBucket domain) (key id) (body object)
+    runResourceT . runAWST env $ req
 
 get :: Read a => Domain -> Id -> IO a
 get domain id =
   do
     env <- awsEnv
+    let req = send $ getObject (metaBucket domain) (key id)
     body <- runResourceT . runAWST env $
       do
-        resp <- send $ getObject (metaBucket domain) (key id)
+        resp <- req
         sinkBody (view gorsBody resp) sinkLbs
     return . read . unpack $ body
 
