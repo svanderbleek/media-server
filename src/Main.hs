@@ -12,8 +12,6 @@ import Network.URI
   (URI, parseURI)
 import Data.Text.Lazy
   (Text)
-import Data.ByteString.Char8
-  (pack)
 
 import Control.Monad.Trans
   (liftIO)
@@ -77,4 +75,4 @@ mkActions get put =
 
 mkGet :: Config.Domain -> Store.Id -> Store.Url
 mkGet domain id =
-  pack $ "http://" ++ domain ++ "/uploads/" ++ show id
+  "http://" ++ domain ++ "/uploads/" ++ show id

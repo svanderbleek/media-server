@@ -22,11 +22,17 @@
           const input = event.target;
           const file = input.files[0];
           debugger
-          return fetch(action.url, {
+          fetch(action.url, {
             method: action.method,
             body: file
-          });
+          })
+          .then(s3Handler)
+          .catch(s3Handler);
         };
+      };
+
+      function s3Handler(data) {
+        debugger
       };
 
       function initFileInput(id) {

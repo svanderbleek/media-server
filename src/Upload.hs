@@ -62,7 +62,7 @@ mkPair (name, method, url) =
   [ pack name .=
     object
     [ "method" .= method
-    , "url" .= show url ] ]
+    , "url" .= url ] ]
 
 data Upload 
   = Upload Store.Id UserToken Status Actions

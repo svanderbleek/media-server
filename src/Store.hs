@@ -18,10 +18,10 @@ import Data.Time
   (getCurrentTime)
 import Data.ByteString 
   (ByteString)
-import Data.ByteString.Lazy.Char8
-  (unpack)
 import Data.Text 
   (pack)
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy.Char8 as BSL
 
 import Data.UUID
   (UUID)
@@ -31,11 +31,12 @@ import System.Random
 import Config
   (Domain)
 
+
 type Id
   = UUID
 
 type Url
-  = ByteString
+  = String
 
 genId :: IO Id
 genId = randomIO
@@ -46,7 +47,8 @@ genPut domain id =
     env <- liftIO awsEnv
     time <- getCurrentTime
     let req = presignURL time expiry $ putObject (uploadBucket domain) (key id) ""
-    runResourceT . runAWST env $ req
+    url <- runResourceT . runAWST env $ req
+    return $ BS.unpack url
 
 put :: Show a => Domain -> Id -> a -> IO PutObjectResponse
 put domain id object =
@@ -64,7 +66,7 @@ get domain id =
       do
         resp <- req
         sinkBody (view gorsBody resp) sinkLbs
-    return . read . unpack $ body
+    return . read . BSL.unpack $ body
 
 awsEnv :: IO Env
 awsEnv = newEnv NorthVirginia Discover
