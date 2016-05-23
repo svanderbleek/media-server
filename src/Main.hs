@@ -25,7 +25,7 @@ import Config
   (ConfigReader, runConfigReader, port)
 import qualified Store
 import Upload
-  (Upload(..), Status(..), Actions(..), Method(..))
+  (Upload(..), Status(Ready), Actions(..), Method(Get, Put))
 
 type Error
   = Text
@@ -56,7 +56,7 @@ createUpload =
   do
     token <- param "token"
     id <- liftIO Store.genId
-    let domain = "pornlevy"
+    let domain = "pornlevy" -- TODO config asks
     put <- liftIO $ Store.genPut domain id
     let get = mkGet domain id
     let upload = Upload id token Ready (mkActions get put)
@@ -67,13 +67,13 @@ findUpload :: Action
 findUpload = 
   do
     id <- read <$> param "id"
-    let domain = "pornlevy"
+    let domain = "pornlevy" -- TODO config asks
     upload <- liftIO (Store.get domain id :: IO Upload)
     json upload
 
 mkActions :: Store.Url -> Store.Url -> Actions
 mkActions get put =
-  Actions [("check", GET, get), ("start", POST, put)]
+  Actions [("check", Get, get), ("start", Put, put)]
 
 mkGet :: Config.Domain -> Store.Id -> Store.Url
 mkGet domain id =

@@ -1,38 +1,51 @@
 <html>
   <head>
     <script>
-      function bindForm(fetcher) {
-        debugger
+      function formBinder(id) {
+        const input = document.querySelector(id);
+        return dataHandler(input);
       };
 
-      function fetchStart(data) {
-        const start = startAction(data);
-        const fetcher = fetchAction(start);
-        bindForm(fetcher);
+      function dataHandler(input) {
+        return function(data) {
+          const start = startAction(data);
+          const fetcher = fetchListener(start);
+          listenInput(input, fetcher)
+        }
       };
 
-      function fetchAction(action) {
-        return function(body) {
-          return fetch(start.url, {
-            method: start.method,
-            body: body 
+      const startAction = data => data.actions.start
+      const listenInput = (input, listener) => input.addEventListener('change', listener)
+
+      function fetchListener(action) {
+        return function(event) {
+          const input = event.target;
+          const file = input.files[0];
+          debugger
+          return fetch(action.url, {
+            method: action.method,
+            body: file
           });
         };
       };
 
-      const startAction = data => data.actions.start
-      const json = resp => resp.json()
+      function initFileInput(id) {
+        return function() {
+          fetch('http://localhost:3333/uploads/test', {
+            method: 'post',
+          })
+          .then(resp => resp.json())
+          .then(formBinder(id));
+        };
+      };
 
-      fetch('http://localhost:3333/uploads/test', {
-        method: 'post',
-      })
-      .then(json)
-      .then(fetchStart)
+      document.addEventListener('DOMContentLoaded', initFileInput('#file-input'))
     </script>
   </head>
   <body>
-    <form id="file-form">
+    <form id="file-form" action="/">
       <input id="file-input" type="file">
+      <button type="submit">go</button>
     </form>
   </body>
 </html>

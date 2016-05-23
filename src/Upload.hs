@@ -24,8 +24,8 @@ type Name
   = String
 
 data Method 
-  = GET
-  | POST
+  = Get
+  | Put
   deriving (Generic, Show, Read)
 
 instance ToJSON Method
