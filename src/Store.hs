@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Store (Id, Url, FileType, genId, genPut, put, get) where
 
@@ -41,17 +42,14 @@ type Id
 type Url
   = String
 
-type FileType
-  = String
-
 genId :: IO Id
 genId = randomIO
 
-genPut :: Domain -> Id -> FileType -> IO Url
-genPut domain id fileType =
+genPut :: Domain -> UploadRequest -> IO Url
+genPut domain UploadRequest{..} =
   do
     credentials <- (S3Keys . BS.pack) <$> Sys.getEnv "MS_AWS_ID" <*> (BS.pack <$> Sys.getEnv "MS_AWS_KEY")
-    let request = S3Request S3PUT (BS.pack fileType) (uploadBucket domain) (BS.pack . show $ id) expiry
+    let request = S3Request S3PUT (BS.pack fileType) (BS.pack $ domain ++ "-uploads") (BS.pack fileName) expiry
     BS.unpack . signedRequest <$> generateS3URL credentials request
 
 put :: Show a => Domain -> Id -> a -> IO PutObjectResponse
@@ -79,9 +77,9 @@ metaBucket :: Domain -> BucketName
 metaBucket domain = 
   BucketName $ pack $ domain ++ "/media-server/uploads/meta"
 
-uploadBucket :: Domain -> ByteString
-uploadBucket domain = 
-  BS.pack $ domain ++ "/media-server/uploads"
+uploadObject :: Store.Id -> String
+uploadObject id = 
+  "/media-server/uploads/" ++ show id
   -- BucketName $ pack $ domain ++ "/media-server/uploads"
 
 key :: Store.Id -> ObjectKey

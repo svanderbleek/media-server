@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
-module Upload (Upload(..), Status(..), Method(..), Actions(..), UserToken) where
+module Upload (Upload(..), Status(..), Method(..), Actions(..)) where
 
 import Data.Aeson
   (ToJSON, toJSON, fromJSON, object, (.=))
@@ -12,10 +12,8 @@ import GHC.Generics
 import Data.Text (pack)
 
 import qualified Store
+import Store (UserToken)
 import qualified Config
-
-type UserToken
-  = String
 
 type Percentage
   = Int

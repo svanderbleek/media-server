@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 module Main where
 
@@ -19,10 +18,6 @@ import Control.Monad.Trans
 import Control.Monad.Reader
   (asks, runReaderT)
 
-import Data.Aeson
-  (FromJSON, fromJSON)
-import GHC.Generics
-
 import qualified Config
 import Config
   (ConfigReader, runConfigReader, port)
@@ -39,14 +34,6 @@ type Action
 
 type App
   = ScottyT Error ConfigReader ()
-
-data UploadRequest
-  = UploadRequest
-  { token :: UserToken
-  , fileType :: FileType }
-  deriving (Generic, Show)
-
-instance FromJSON UploadRequest
 
 main :: IO ()
 main =

@@ -6,47 +6,49 @@
         token: "test"
       };
 
-      MS.Upload.init = function(file) {
-        debugger
-        fetch('localhost:3333/uploads/', {
+      MS.Upload.init = function(event) {
+        var file = event.target.files[0];
+        fetch('http://localhost:3333/uploads/', {
           method: 'post',
           body: JSON.stringify({
             fileType: file.type,
             token: MS.token
           })
         })
+        .then((response) => response.json())
         .then(MS.Upload.start(file));
       };
 
       MS.Upload.start = function(file) {
-        return function(data) {
-          const start = data.actions.start;
+        return function(json) {
+          const start = json.actions.start;
+          file.name = json.id
+          debugger
           fetch(start.url, {
             method: start.method,
             body: file
           })
-          .then(MS.Upload.finish)
-          .catch(MS.Upload.catchStart)
+          .then(MS.Upload.start.finish)
+          .catch(MS.Upload.start.catch)
         };
       };
       
-      MS.Upload.finish = function (data) {
+      MS.Upload.start.finish = function (data) {
         debugger
       };
 
-      MS.Upload.catchStart = function (err) {
+      MS.Upload.start.catch = function (err) {
         debugger
       };
 
       MS.file = function(selector) {
         return function() {
           const input = document.querySelector(selector);
-          const file = input.files[0];
-          input.addEventListener('change', MS.Upload.init(file))
+          input.addEventListener('change', MS.Upload.init);
         };
       };
 
-      document.addEventListener('DOMContentLoaded', MS.file('#file-input')
+      document.addEventListener('DOMContentLoaded', MS.file('#file-input'));
     </script>
   </head>
   <body>
