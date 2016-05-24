@@ -11,6 +11,7 @@
         fetch('http://localhost:3333/uploads/', {
           method: 'post',
           body: JSON.stringify({
+            fileName: file.name,
             fileType: file.type,
             token: MS.token
           })
@@ -22,8 +23,6 @@
       MS.Upload.start = function(file) {
         return function(json) {
           const start = json.actions.start;
-          file.name = json.id
-          debugger
           fetch(start.url, {
             method: start.method,
             body: file

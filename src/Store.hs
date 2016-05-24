@@ -31,6 +31,8 @@ import System.Random
 
 import Config
   (Domain)
+import User
+  (Upload(..), FileType, FileName, Token)
 
 import Network.S3
   (S3Keys(..), S3Request(..), S3Method(S3PUT), generateS3URL, signedRequest)
@@ -45,8 +47,8 @@ type Url
 genId :: IO Id
 genId = randomIO
 
-genPut :: Domain -> UploadRequest -> IO Url
-genPut domain UploadRequest{..} =
+genPut :: Domain -> Upload -> IO Url
+genPut domain Upload{..} =
   do
     credentials <- (S3Keys . BS.pack) <$> Sys.getEnv "MS_AWS_ID" <*> (BS.pack <$> Sys.getEnv "MS_AWS_KEY")
     let request = S3Request S3PUT (BS.pack fileType) (BS.pack $ domain ++ "-uploads") (BS.pack fileName) expiry
@@ -76,11 +78,6 @@ awsEnv = newEnv NorthVirginia Discover
 metaBucket :: Domain -> BucketName
 metaBucket domain = 
   BucketName $ pack $ domain ++ "/media-server/uploads/meta"
-
-uploadObject :: Store.Id -> String
-uploadObject id = 
-  "/media-server/uploads/" ++ show id
-  -- BucketName $ pack $ domain ++ "/media-server/uploads"
 
 key :: Store.Id -> ObjectKey
 key id = 

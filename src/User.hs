@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
-module User (Token, FileType, FileName, Upload) where
+module User (Token, FileType, FileName, Upload(..)) where
 
 import Data.Aeson
   (FromJSON, fromJSON)

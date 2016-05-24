@@ -23,8 +23,12 @@ import Config
   (ConfigReader, runConfigReader, port)
 import qualified Store
 import Store (FileType)
+import qualified Upload
 import Upload
-  (Upload(..), Status(Ready), Actions(..), Method(Get, Put), UserToken)
+  (Status(Ready), Actions(..), Method(Get, Put))
+
+import User
+  (token)
 
 type Error
   = Text
@@ -56,9 +60,9 @@ createUpload =
     request <- jsonData
     id <- liftIO Store.genId
     let domain = "pornlevy" -- TODO config asks
-    put <- liftIO $ Store.genPut domain id (fileType request)
+    put <- liftIO $ Store.genPut domain request
     let get = mkGet domain id
-    let upload = Upload id (token request) Ready (mkActions get put)
+    let upload = Upload.Upload (token request) Ready (mkActions get put)
     liftIO $ Store.put domain id upload
     json upload
 
@@ -67,7 +71,7 @@ findUpload =
   do
     id <- read <$> param "id"
     let domain = "pornlevy" -- TODO config asks
-    upload <- liftIO (Store.get domain id :: IO Upload)
+    upload <- liftIO (Store.get domain id :: IO Upload.Upload)
     json upload
 
 mkActions :: Store.Url -> Store.Url -> Actions

@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 
 module Upload (Upload(..), Status(..), Method(..), Actions(..)) where
 
@@ -12,7 +11,8 @@ import GHC.Generics
 import Data.Text (pack)
 
 import qualified Store
-import Store (UserToken)
+import User
+  (Token)
 import qualified Config
 
 type Percentage
@@ -63,13 +63,10 @@ mkPair (name, method, url) =
     , "url" .= url ] ]
 
 data Upload 
-  = Upload Store.Id UserToken Status Actions
-  deriving (Show, Read)
+  = Upload
+    { token :: Token
+    , status :: Status
+    , actions :: Actions }
+    deriving (Generic, Show, Read)
 
-instance ToJSON Upload where
-  toJSON (Upload id token status actions) =
-    object 
-    [ "id" .= show id
-    , "token" .= token
-    , "status" .= status
-    , "actions" .= actions ]
+instance ToJSON Upload
