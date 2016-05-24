@@ -1,9 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Main where
 
 import Web.Scotty.Trans
-  (scottyT, ScottyT, ActionT, get, post, json, param, status, middleware) 
+  (scottyT, ScottyT, ActionT, get, post, json, param, status, middleware, jsonData) 
 import Network.Wai.Middleware.Cors
   (simpleCors)
 import Network.HTTP.Types
@@ -18,12 +19,17 @@ import Control.Monad.Trans
 import Control.Monad.Reader
   (asks, runReaderT)
 
+import Data.Aeson
+  (FromJSON, fromJSON)
+import GHC.Generics
+
 import qualified Config
 import Config
   (ConfigReader, runConfigReader, port)
 import qualified Store
+import Store (FileType)
 import Upload
-  (Upload(..), Status(Ready), Actions(..), Method(Get, Put))
+  (Upload(..), Status(Ready), Actions(..), Method(Get, Put), UserToken)
 
 type Error
   = Text
@@ -33,6 +39,14 @@ type Action
 
 type App
   = ScottyT Error ConfigReader ()
+
+data UploadRequest
+  = UploadRequest
+  { token :: UserToken
+  , fileType :: FileType }
+  deriving (Generic, Show)
+
+instance FromJSON UploadRequest
 
 main :: IO ()
 main =
@@ -46,18 +60,18 @@ app =
   do
     middleware simpleCors
     get "/" $ status status200
-    post "/uploads/:token" createUpload
+    post "/uploads/" createUpload
     get "/uploads/:id" findUpload
 
 createUpload :: Action
 createUpload = 
   do
-    token <- param "token"
+    request <- jsonData
     id <- liftIO Store.genId
     let domain = "pornlevy" -- TODO config asks
-    put <- liftIO $ Store.genPut domain id
+    put <- liftIO $ Store.genPut domain id (fileType request)
     let get = mkGet domain id
-    let upload = Upload id token Ready (mkActions get put)
+    let upload = Upload id (token request) Ready (mkActions get put)
     liftIO $ Store.put domain id upload
     json upload
 

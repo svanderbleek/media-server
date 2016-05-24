@@ -31,6 +31,7 @@ executable media-server
                      , network-uri
                      , amazonka
                      , amazonka-s3
+                     , s3-signer
                      , conduit-extra
                      , lens
                      , mtl

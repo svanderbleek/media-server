@@ -1,57 +1,57 @@
 <html>
   <head>
     <script>
-      function formBinder(id) {
-        const input = document.querySelector(id);
-        return dataHandler(input);
+      const MS = {
+        Upload: {},
+        token: "test"
       };
 
-      function dataHandler(input) {
+      MS.Upload.init = function(file) {
+        debugger
+        fetch('localhost:3333/uploads/', {
+          method: 'post',
+          body: JSON.stringify({
+            fileType: file.type,
+            token: MS.token
+          })
+        })
+        .then(MS.Upload.start(file));
+      };
+
+      MS.Upload.start = function(file) {
         return function(data) {
-          const start = startAction(data);
-          const fetcher = fetchListener(start);
-          listenInput(input, fetcher)
-        }
-      };
-
-      const startAction = data => data.actions.start
-      const listenInput = (input, listener) => input.addEventListener('change', listener)
-
-      function fetchListener(action) {
-        return function(event) {
-          const input = event.target;
-          const file = input.files[0];
-          debugger
-          fetch(action.url, {
-            method: action.method,
+          const start = data.actions.start;
+          fetch(start.url, {
+            method: start.method,
             body: file
           })
-          .then(s3Handler)
-          .catch(s3Handler);
+          .then(MS.Upload.finish)
+          .catch(MS.Upload.catchStart)
         };
       };
-
-      function s3Handler(data) {
+      
+      MS.Upload.finish = function (data) {
         debugger
       };
 
-      function initFileInput(id) {
+      MS.Upload.catchStart = function (err) {
+        debugger
+      };
+
+      MS.file = function(selector) {
         return function() {
-          fetch('http://localhost:3333/uploads/test', {
-            method: 'post',
-          })
-          .then(resp => resp.json())
-          .then(formBinder(id));
+          const input = document.querySelector(selector);
+          const file = input.files[0];
+          input.addEventListener('change', MS.Upload.init(file))
         };
       };
 
-      document.addEventListener('DOMContentLoaded', initFileInput('#file-input'))
+      document.addEventListener('DOMContentLoaded', MS.file('#file-input')
     </script>
   </head>
   <body>
     <form id="file-form" action="/">
       <input id="file-input" type="file">
-      <button type="submit">go</button>
     </form>
   </body>
 </html>

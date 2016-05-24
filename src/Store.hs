@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Store (Id, Url, genId, genPut, put, get) where
+module Store (Id, Url, FileType, genId, genPut, put, get) where
 
 import Control.Monad.Trans.AWS
   (sinkBody, runResourceT, runAWST, send, presignURL, newEnv
@@ -31,6 +31,9 @@ import System.Random
 import Config
   (Domain)
 
+import Network.S3
+  (S3Keys(..), S3Request(..), S3Method(S3PUT), generateS3URL, signedRequest)
+import System.Environment as Sys
 
 type Id
   = UUID
@@ -38,17 +41,18 @@ type Id
 type Url
   = String
 
+type FileType
+  = String
+
 genId :: IO Id
 genId = randomIO
 
-genPut :: Domain -> Id -> IO Url
-genPut domain id =
+genPut :: Domain -> Id -> FileType -> IO Url
+genPut domain id fileType =
   do
-    env <- liftIO awsEnv
-    time <- getCurrentTime
-    let req = presignURL time expiry $ putObject (uploadBucket domain) (key id) ""
-    url <- runResourceT . runAWST env $ req
-    return $ BS.unpack url
+    credentials <- (S3Keys . BS.pack) <$> Sys.getEnv "MS_AWS_ID" <*> (BS.pack <$> Sys.getEnv "MS_AWS_KEY")
+    let request = S3Request S3PUT (BS.pack fileType) (uploadBucket domain) (BS.pack . show $ id) expiry
+    BS.unpack . signedRequest <$> generateS3URL credentials request
 
 put :: Show a => Domain -> Id -> a -> IO PutObjectResponse
 put domain id object =
@@ -75,9 +79,10 @@ metaBucket :: Domain -> BucketName
 metaBucket domain = 
   BucketName $ pack $ domain ++ "/media-server/uploads/meta"
 
-uploadBucket :: Domain -> BucketName
+uploadBucket :: Domain -> ByteString
 uploadBucket domain = 
-  BucketName $ pack $ domain ++ "/media-server/uploads"
+  BS.pack $ domain ++ "/media-server/uploads"
+  -- BucketName $ pack $ domain ++ "/media-server/uploads"
 
 key :: Store.Id -> ObjectKey
 key id = 
@@ -87,5 +92,5 @@ body :: Show a => a -> RqBody
 body =
   toBody . show
 
-expiry :: Seconds
+expiry :: Integer
 expiry = 30 * 60
