@@ -59,7 +59,7 @@ createUpload =
   do
     request <- jsonData
     id <- liftIO Store.genId
-    let domain = "pornlevy" -- TODO config asks
+    let domain = "scrub" -- TODO config asks
     put <- liftIO $ Store.genPut domain request
     let get = mkGet domain id
     let upload = Upload.Upload (token request) Ready (mkActions get put)
@@ -70,7 +70,7 @@ findUpload :: Action
 findUpload = 
   do
     id <- read <$> param "id"
-    let domain = "pornlevy" -- TODO config asks
+    let domain = "scrub" -- TODO config asks
     upload <- liftIO (Store.get domain id :: IO Upload.Upload)
     json upload
 
